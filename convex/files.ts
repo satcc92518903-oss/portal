@@ -35,6 +35,25 @@ export const getBySlug = query({
 });
 
 /**
+ * Server-only lookup of the R2 storage key for a ready, unexpired portal.
+ * Used by the download route to build a presigned GET URL. The key is kept
+ * out of the public `getBySlug` view so it never reaches the client.
+ */
+export const getR2Key = query({
+  args: { slug: v.string() },
+  handler: async (ctx, { slug }) => {
+    const row = await ctx.db
+      .query("files")
+      .withIndex("by_slug", (q) => q.eq("slug", slug))
+      .unique();
+
+    if (!row || row.status !== "ready") return null;
+    if (!row.expiresAt || row.expiresAt <= Date.now()) return null;
+    return row.r2Key;
+  },
+});
+
+/**
  * Transactional reserve: re-checks the slug is free and inserts a pending row.
  * Convex mutations are atomic, so this prevents two uploaders racing for the
  * same slug. Stores the hashed owner token; the raw token lives in a cookie.

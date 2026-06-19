@@ -12,7 +12,7 @@ import {
 } from "@/lib/owner-token";
 import { validateSlug, normalizeSlug } from "@/lib/slug";
 
-export const MAX_BYTES = 500 * 1024 * 1024; // 500MB
+const MAX_BYTES = 500 * 1024 * 1024; // 500MB
 const COOKIE_MAX_AGE = 60 * 60 * 24; // 24h
 
 type ReserveResult =
